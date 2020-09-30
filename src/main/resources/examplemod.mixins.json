@@ -9,7 +9,8 @@
     "ChunkSectionFibber",
     "IdListPaletteFibber",
     "PalettedContainerFibber",
-    "ThreadedAnvilChunkStorageMixin"
+    "ThreadedAnvilChunkStorageMixin",
+    "TrackedEntityMixin"
   ],
   "client": [
   ],

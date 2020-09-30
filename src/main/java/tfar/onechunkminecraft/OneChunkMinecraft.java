@@ -1,48 +1,45 @@
-package com.example.examplemod;
+package tfar.onechunkminecraft;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.play.server.SChunkDataPacket;
 import net.minecraft.network.play.server.SUnloadChunkPacket;
-import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.TrackedEntity;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ChunkManager;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(ExampleMod.MODID)
-public class ExampleMod
-{
+@Mod(OneChunkMinecraft.MODID)
+public class OneChunkMinecraft {
     // Directly reference a log4j logger.
 
-    public static final String MODID = "examplemod";
+    public static final String MODID = "onechunkminecraft";
 
     public static final Map<ServerPlayerEntity,ChunkPos> prevPos = new HashMap<>();
 
-    public ExampleMod() {
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+    public OneChunkMinecraft() {
+        MinecraftForge.EVENT_BUS.addListener(this::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(this::stop);
     }
 
-    public void onServerStarting(TickEvent.PlayerTickEvent event) {
+    public static boolean onTrack(Set set, ServerPlayerEntity player, Entity entity, TrackedEntity entry, Set<ServerPlayerEntity> trackingPlayers) {
+        if (!new ChunkPos(player.getPosition()).equals(new ChunkPos(entity.getPosition()))) {
+            entry.untrack(player);
+            trackingPlayers.remove(player);
+            return false;
+        }
+        return set.add(player);
+    }
+
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (!event.player.world.isRemote && event.phase == TickEvent.Phase.START) {
             ServerPlayerEntity player = (ServerPlayerEntity) event.player;
             World world = player.world;
@@ -58,6 +55,7 @@ public class ExampleMod
             prevPos.put(player,current);
         }
     }
+
     private void stop(FMLServerStoppingEvent e) {
         prevPos.clear();
     }

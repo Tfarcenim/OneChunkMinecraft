@@ -33,8 +33,8 @@ public class ExampleMod
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void setup(final FMLCommonSetupEvent event)
-    {
+    private void setup(final FMLCommonSetupEvent event) {
+        FibLib.Blocks.register(new BlockFib(Blocks.GRASS_BLOCK,Blocks.DIAMOND_BLOCK));
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {

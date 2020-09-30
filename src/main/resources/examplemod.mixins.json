@@ -4,9 +4,15 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "examplemod.refmap.json",
   "mixins": [
+    "ArrayPaletteFibber",
+    "BiMapPaletteFibber",
+    "ChunkSectionFibber",
+    "IdListPaletteFibber",
+    "PalettedContainerFibber",
+    "SChunkDataPacketMixin",
+    "ThreadedAnvilChunkStorageMixin"
   ],
-  "client":[
-    "ExampleMixin"
+  "client": [
   ],
   "injectors": {
     "defaultRequire": 1

@@ -6,6 +6,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.play.server.SChunkDataPacket;
 import net.minecraft.network.play.server.SUpdateLightPacket;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.server.ChunkManager;
 import net.minecraft.world.server.ServerWorldLightManager;
@@ -22,13 +23,10 @@ public abstract class ThreadedAnvilChunkStorageMixin {
     @Final
     private ServerWorldLightManager lightManager;
 
-    @Inject(method = "sendChunkData", at = @At("HEAD"))
-    public void fixPackets(ServerPlayerEntity serverPlayerEntity_1, IPacket<?>[] packets_1, Chunk worldChunk_1, CallbackInfo ci) {
-        if (packets_1[0] == null) {
-            packets_1[0] = new SChunkDataPacket();
-            ChunkDataFibber.fix(packets_1[0]).fix(worldChunk_1, 65535, serverPlayerEntity_1);
-            // this new boolean is apparently an "is invalid" flag.
-            packets_1[1] = new SUpdateLightPacket(worldChunk_1.getPos(), this.lightManager, true);
+    @Inject(method = "setChunkLoadedAtClient", at = @At("HEAD"),cancellable = true)
+    public void fixPackets(ServerPlayerEntity player, ChunkPos chunkPosIn, IPacket<?>[] packetCache, boolean wasLoaded, boolean load, CallbackInfo ci) {
+        if (!chunkPosIn.equals(new ChunkPos(player.getPosition()))) {
+            ci.cancel();
         }
     }
 }

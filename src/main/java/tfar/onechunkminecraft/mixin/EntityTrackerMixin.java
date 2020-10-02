@@ -1,34 +1,27 @@
 package tfar.onechunkminecraft.mixin;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.world.TrackedEntity;
+import net.minecraft.entity.EntityTrackerEntry;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import tfar.onechunkminecraft.OneChunkMinecraft;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Set;
-
-@Mixin(targets = "net.minecraft.world.server.ChunkManager$EntityTracker")
+@Mixin(EntityTrackerEntry.class)
 public class EntityTrackerMixin {
 
-    @Shadow
-    @Final
-    private Entity entity;
+    @Shadow @Final private Entity trackedEntity;
 
-    @Shadow
-    @Final
-    private TrackedEntity entry;
-
-    @Shadow
-    @Final
-    private Set<ServerPlayerEntity> trackingPlayers;
-
-    @Redirect(method = "updateTrackingState(Lnet/minecraft/entity/player/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z"))
-    private boolean no(Set set, Object e) {
-        return OneChunkMinecraft.onTrack(set,(ServerPlayerEntity)e,entity,entry,trackingPlayers);
+    @Inject(method = "isVisibleTo",at = @At("HEAD"),cancellable = true)
+    private void no(EntityPlayerMP playerMP, CallbackInfoReturnable<Boolean> cir) {
+        ChunkPos entityPos = new ChunkPos(trackedEntity.getPosition());
+        ChunkPos playerPos = new ChunkPos(playerMP.getPosition());
+        if (!entityPos.equals(playerPos)) {
+            cir.setReturnValue(false);
+        }
     }
 }

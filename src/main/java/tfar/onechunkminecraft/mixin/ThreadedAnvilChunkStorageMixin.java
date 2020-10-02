@@ -1,22 +1,45 @@
 package tfar.onechunkminecraft.mixin;
 
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.IPacket;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.SPacketChunkData;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.server.ChunkManager;
+import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ChunkManager.class)
+import javax.annotation.Nullable;
+
+@Mixin(PlayerChunkMapEntry.class)
 public abstract class ThreadedAnvilChunkStorageMixin {
 
-    @Inject(method = "setChunkLoadedAtClient", at = @At("HEAD"),cancellable = true)
-    public void fixPackets(ServerPlayerEntity player, ChunkPos chunkPosIn, IPacket<?>[] packetCache, boolean wasLoaded, boolean load, CallbackInfo ci) {
-        if (!chunkPosIn.equals(new ChunkPos(player.getPosition()))) {
-            ci.cancel();
+    @Shadow @Nullable private Chunk chunk;
+
+    @Redirect(method = "sendPacket", at = @At(value = "INVOKE",target = "Lnet/minecraft/network/NetHandlerPlayServer;sendPacket(Lnet/minecraft/network/Packet;)V"))
+    public void fixPackets(NetHandlerPlayServer netHandlerPlayServer, Packet<?> packetIn) {
+        if (packetIn instanceof SPacketChunkData) {
+            ChunkPos playerPos = new ChunkPos(netHandlerPlayServer.player.getPosition());
+            if (!playerPos.equals(chunk.getPos())) {
+                return;
+            } else {
+                netHandlerPlayServer.sendPacket(packetIn);
+            }
+        }
+    }
+
+    @Redirect(method = "sendToPlayers",at = @At(value = "INVOKE",target = "Lnet/minecraft/network/NetHandlerPlayServer;sendPacket(Lnet/minecraft/network/Packet;)V"))
+    private void noChunks(NetHandlerPlayServer netHandlerPlayServer, Packet<?> packetIn) {
+        if (packetIn instanceof SPacketChunkData) {
+            ChunkPos playerPos = new ChunkPos(netHandlerPlayServer.player.getPosition());
+            if (!playerPos.equals(chunk.getPos())) {
+                return;
+            } else {
+                netHandlerPlayServer.sendPacket(packetIn);
+            }
         }
     }
 }

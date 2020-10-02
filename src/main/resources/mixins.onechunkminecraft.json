@@ -2,10 +2,10 @@
   "required": true,
   "package": "tfar.onechunkminecraft.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "onechunkminecraft.refmap.json",
+  "refmap": "mixins.onechunkminecraft.refmap.json",
   "mixins": [
-    "ThreadedAnvilChunkStorageMixin",
-    "EntityTrackerMixin"
+    "EntityTrackerMixin",
+    "ThreadedAnvilChunkStorageMixin"
   ],
   "client": [
   ],

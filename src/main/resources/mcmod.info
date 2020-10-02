@@ -1,0 +1,15 @@
+[
+{
+  "modid": "onechunkminecraft",
+  "name": "One Chunk Minecraft",
+  "description": "Minecraft but it's one chunk",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Tfarecmin"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "tfar.onechunkminecraft.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "onechunkminecraft.refmap.json",
+  "mixins": [
+    "EntityTrackerMixin",
+    "ServerPlayerEntityMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

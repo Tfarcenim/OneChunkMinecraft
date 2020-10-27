@@ -4,8 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "onechunkminecraft.refmap.json",
   "mixins": [
-    "ThreadedAnvilChunkStorageMixin",
-    "EntityTrackerMixin"
+    "EntityTrackerMixin",
+    "ServerPlayerEntityMixin"
   ],
   "client": [
   ],

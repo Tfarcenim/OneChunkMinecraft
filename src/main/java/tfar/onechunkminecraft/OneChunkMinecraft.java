@@ -2,11 +2,16 @@ package tfar.onechunkminecraft;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.IPacket;
 import net.minecraft.network.play.server.SChunkDataPacket;
 import net.minecraft.network.play.server.SUnloadChunkPacket;
+import net.minecraft.network.play.server.SUpdateLightPacket;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.TrackedEntity;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.lighting.WorldLightManager;
+import net.minecraft.world.server.ServerWorldLightManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -23,7 +28,7 @@ public class OneChunkMinecraft {
 
     public static final String MODID = "onechunkminecraft";
 
-    public static final Map<ServerPlayerEntity,ChunkPos> prevPos = new HashMap<>();
+    public static final Map<ServerPlayerEntity, ChunkPos> prevPos = new HashMap<>();
 
     public OneChunkMinecraft() {
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerTick);
@@ -40,19 +45,23 @@ public class OneChunkMinecraft {
     }
 
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (!event.player.world.isRemote && event.phase == TickEvent.Phase.START) {
+        if (!event.player.world.isRemote && event.phase == TickEvent.Phase.END) {
             ServerPlayerEntity player = (ServerPlayerEntity) event.player;
             World world = player.world;
             ChunkPos current = new ChunkPos(player.getPosition());
             ChunkPos previous = prevPos.get(player);
-
             if (!current.equals(previous)) {
-                player.connection.sendPacket(new SChunkDataPacket(world.getChunk(current.x,current.z),65535));
+                Chunk chunkIn = world.getChunk(current.x, current.z);
+                WorldLightManager worldLightManager = world.getLightManager();
+                IPacket<?>[] packetCache = new IPacket[2];
+                packetCache[0] = new SChunkDataPacket(chunkIn, 65535);
+                packetCache[1] = new SUpdateLightPacket(chunkIn.getPos(), worldLightManager, true);
+                player.sendChunkLoad(current, packetCache[0], packetCache[1]);
                 if (previous != null) {
-                    player.connection.sendPacket(new SUnloadChunkPacket(previous.x,previous.z));
+                    player.sendChunkUnload(previous);
                 }
+                prevPos.put(player, current);
             }
-            prevPos.put(player,current);
         }
     }
 
